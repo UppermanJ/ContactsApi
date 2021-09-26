@@ -33,104 +33,91 @@ namespace DataAccess.Tests.Integration.Repositories
         [Test]
         public void Create_WhenCalled_ReturnsCreatedUser()
         {
-            var contactToCreate = GenerateContact();
+            var contactToCreate = ContactTestHelpers.GenerateContact();
 
             var createdContact = _repository.Create(contactToCreate);
 
-            AssertContactMatchesAllButId(createdContact, contactToCreate);
+            ContactTestHelpers.AssertContactMatchesAllButId(createdContact, contactToCreate);
         }
 
         [Test]
         public void Create_WhenCalled_ShouldAutoIncrementId()
         {
-            var contactToCreate = GenerateContact();
+            var contactToCreate = ContactTestHelpers.GenerateContact();
 
             var createdContact = _repository.Create(contactToCreate);
             Assert.That(createdContact.Id, Is.Not.EqualTo(createdContact));
         }
         #endregion
 
-        #region MyRegion
-        private Contact GenerateContact()
+        #region GetAll
+
+        [Test]
+        public void GetAll_WhenCalledWithExistingContacts_ReturnsAllContacts()
         {
-            return new Contact()
-            {
-                Id = 0,
-                Name = new Name
-                {
-                    First = "name.first-" + Guid.NewGuid(),
-                    Middle = "name.middle-" + Guid.NewGuid(),
-                    Last = "name.last-" + Guid.NewGuid()
-                },
-                Address = new Address
-                {
-                    Street = "address.street-" + Guid.NewGuid(),
-                    City = "address.city-" + Guid.NewGuid(),
-                    State = "address.state-" + Guid.NewGuid(),
-                    Zip = "address.zip-" + Guid.NewGuid()
-                },
-                Phone = new List<Phone>()
-                {
-                    new Phone
-                    {
-                        Number = "phone.mobile-" + Guid.NewGuid(),
-                        Type = PhoneType.Mobile
-                    },
-                    new Phone
-                    {
-                        Number = "phone.work-" + Guid.NewGuid(),
-                        Type = PhoneType.Work
-                    }
-                    ,new Phone
-                    {
-                        Number = "phone.home-" + Guid.NewGuid(),
-                        Type = PhoneType.Home
-                    }
-                },
-                Email = "email-" + Guid.NewGuid()
-            };
+            var createdContactOne = _repository.Create(ContactTestHelpers.GenerateContact());
+            var createdContactTwo = _repository.Create(ContactTestHelpers.GenerateContact());
+
+            var foundContacts = _repository.GetAll();
+
+            ContactTestHelpers.AssertAllContactsMatch(foundContacts, new List<Contact>() {createdContactOne, createdContactTwo});
+        }
+        [Test]
+        public void GetAll_WhenCalledWithNoContacts_ReturnsEmptyEnumerable()
+        {
+            var foundContacts = _repository.GetAll();
+
+            Assert.That(foundContacts, Is.InstanceOf<IEnumerable<Contact>>().And.Empty);
         }
 
-        private void AssertContactMatchesAllButId(Contact actual, Contact expected)
-        {
-            if (expected.Name == null)
-            {
-                Assert.That(actual.Name, Is.Null);
-            }
-            else
-            {
-                var actualName = actual.Name;
-                var expectedName = expected.Name;
-                Assert.That(actualName.First, Is.EqualTo(expectedName.First));
-                Assert.That(actualName.Last, Is.EqualTo(expectedName.Last));
-                Assert.That(actualName.Middle, Is.EqualTo(expectedName.Middle));
-            }
+        #endregion
 
-            if (expected.Address == null)
-            {
-                Assert.That(actual.Address, Is.Null);
-            }
-            else
-            {
-                var actualAddress = actual.Address;
-                var expectedAddress = expected.Address;
-                Assert.That(actualAddress.City, Is.EqualTo(expectedAddress.City));
-                Assert.That(actualAddress.State, Is.EqualTo(expectedAddress.State));
-                Assert.That(actualAddress.Street, Is.EqualTo(expectedAddress.Street));
-                Assert.That(actualAddress.Zip, Is.EqualTo(expectedAddress.Zip));
-            }
-            Assert.That(actual.Phone, Has.Count.EqualTo(expected.Phone.Count()));
-            var index = 0;
-            while (index < actual.Phone.Count())
-            {
-                var actualPhone = actual.Phone.ToArray()[index];
-                var expectedPhone = expected.Phone.ToArray()[index];
-                Assert.That(actualPhone.Number, Is.EqualTo(expectedPhone.Number));
-                Assert.That(actualPhone.Type, Is.EqualTo(expectedPhone.Type));
-                index++;
-            }
-            Assert.That(actual.Email, Is.EqualTo(expected.Email));
+        #region GetOne
+
+        [Test]
+        public void GetOne_WhenCalledWithExistingContact_ReturnsContact()
+        {
+            var createdContact = _repository.Create(ContactTestHelpers.GenerateContact());
+
+            var foundContact = _repository.GetOne(createdContact.Id);
+
+            Assert.That(foundContact.Id, Is.EqualTo(createdContact.Id));
+            ContactTestHelpers.AssertContactMatchesAllButId(foundContact, createdContact);
         }
+
+        [Test]
+        public void GetOne_WhenCalledWithNonExistingExistingContactId_ReturnsNull()
+        {
+            var createdContact = _repository.Create(ContactTestHelpers.GenerateContact());
+
+            var foundContact = _repository.GetOne(createdContact.Id + 1);
+
+            Assert.That(foundContact, Is.Null);
+        }
+
+        #endregion
+
+        #region Delete
+
+        [Test]
+        public void Delete_WhenCalledWithExistingId_DeletesItem()
+        {
+            var createdContact = _repository.Create(ContactTestHelpers.GenerateContact());
+
+            _repository.Delete(createdContact.Id);
+
+            var foundContact = _repository.GetOne(createdContact.Id);
+            Assert.That(foundContact, Is.Null);
+        }
+
+        [Test]
+        public void Delete_WhenCalledWithNonExisting_DoesNotThrow()
+        {
+            var createdContact = _repository.Create(ContactTestHelpers.GenerateContact());
+
+            _repository.Delete(createdContact.Id + 1);
+        }
+
         #endregion
 
     }

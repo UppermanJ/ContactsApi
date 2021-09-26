@@ -10,7 +10,7 @@ namespace Services.Extensions
 {
     public static class ServiceLayerResponseExtensions
     {
-        public static ServiceLayerResponse<T> AddValidationErrors<T>(this ServiceLayerResponse<T>  response, ValidationResult validationResult)
+        public static ServiceLayerResponseWrapper<T> AddValidationErrors<T>(this ServiceLayerResponseWrapper<T>  response, ValidationResult validationResult)
         {
             if (validationResult.Errors.Any() == false)
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using DataAccess.LiteDbInfrastructure;
 using DataAccess.LiteDbInfrastructure.Interfaces;
 using DataAccess.Repositories.Interfaces;
@@ -16,9 +17,19 @@ namespace DataAccess.Repositories
 
         }
 
-        public Contact GetSingle(int id)
+        public Contact GetOne(int id)
         {
-            throw new NotImplementedException();
+            return _collection.FindById(id);
+        }
+
+        public IEnumerable<Contact> GetAll()
+        {
+            return _collection.FindAll();
+        }
+
+        public void Delete(int id)
+        {
+            _collection.Delete(id);
         }
     }
 }

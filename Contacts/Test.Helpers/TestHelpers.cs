@@ -8,6 +8,10 @@ namespace Test.Helpers
 {
     public static class TestHelpers
     {
+        public static string GetDefault500Message(string traceId)
+        {
+            return $"Something went wrong.  Log ID: {traceId}";
+        }
         public static void AssertConstructorThrowsNullExceptionsWhenArgumentsAreNotProvided(Type type)
         {
             foreach (var constructor in type.GetConstructors())

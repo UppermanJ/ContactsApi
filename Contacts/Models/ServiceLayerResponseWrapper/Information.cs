@@ -5,11 +5,7 @@
         public string Message;
     }
 
-    public class Error : Information
-    {
-    }
-
-    public class ValidationError : Error
-    {
-    }
+    public class Error : Information { }
+    public class ValidationError : Error { }
+    public class NotFound : Error { }
 }

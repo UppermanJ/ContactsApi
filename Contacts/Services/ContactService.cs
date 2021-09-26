@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using DataAccess.Repositories.Interfaces;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -23,11 +24,34 @@ namespace Services
             _contactValidator = validator ?? throw new ArgumentNullException(nameof(validator));
         }
 
-        public ServiceLayerResponse<Contact> Create(Contact contact)
+        public ServiceLayerResponseWrapper<Contact> Create(Contact contact)
         {
-            var response = new ServiceLayerResponse<Contact>();
+            var response = new ServiceLayerResponseWrapper<Contact>();
             response.AddValidationErrors(_contactValidator.Validate(contact));
             return response.HasErrors ? response : response.SetData(_contactRepository.Create(contact));
+        }
+
+        public ServiceLayerResponseWrapper<IEnumerable<Contact>> GetAll()
+        {
+            return new ServiceLayerResponseWrapper<IEnumerable<Contact>>().SetData(_contactRepository.GetAll());
+        }
+
+        public ServiceLayerResponseWrapper<Contact> GetOne(int id)
+        {
+            var response = new ServiceLayerResponseWrapper<Contact>();
+            var contact = _contactRepository.GetOne(id);
+            if (contact == null)
+            {
+                return response.AddInformation<NotFound>("No contact found with that Id");
+            }
+            return response.SetData(contact);
+        }
+
+        public ServiceLayerResponse Delete(int id)
+        {
+            var response = new ServiceLayerResponse();
+            _contactRepository.Delete(id);
+            return response;
         }
     }
 }

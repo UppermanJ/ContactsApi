@@ -8,6 +8,9 @@ namespace Services.Interfaces
 {
     public interface IContactService
     {
-        ServiceLayerResponse<Contact> Create(Contact contact);
+        ServiceLayerResponseWrapper<Contact> Create(Contact contact);
+        ServiceLayerResponseWrapper<IEnumerable<Contact>> GetAll();
+        ServiceLayerResponseWrapper<Contact> GetOne(int id);
+        ServiceLayerResponse Delete(int id);
     }
 }
