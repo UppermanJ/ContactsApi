@@ -1,7 +1,5 @@
 ﻿using Models;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Models.ServiceLayerResponseWrapper;
 
 namespace Services.Interfaces
@@ -12,5 +10,7 @@ namespace Services.Interfaces
         ServiceLayerResponseWrapper<IEnumerable<Contact>> GetAll();
         ServiceLayerResponseWrapper<Contact> GetOne(int id);
         ServiceLayerResponse Delete(int id);
+        ServiceLayerResponseWrapper<Contact> Update(Contact contact);
+        ServiceLayerResponseWrapper<IEnumerable<CallRecord>> GetCallList();
     }
 }

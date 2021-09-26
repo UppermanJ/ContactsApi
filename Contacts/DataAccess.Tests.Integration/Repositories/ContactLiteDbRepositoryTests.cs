@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
+using Castle.DynamicProxy.Generators;
 using DataAccess.Repositories;
 using DataAccess.Tests.Integration.Infrastructure;
 using Models;
@@ -117,8 +115,147 @@ namespace DataAccess.Tests.Integration.Repositories
 
             _repository.Delete(createdContact.Id + 1);
         }
-
         #endregion
 
+        #region Update
+        [Test]
+        public void Update_WhenCalled_UpdatesContact()
+        {
+            var createdContact = _repository.Create(ContactTestHelpers.GenerateContact());
+            var newContact = createdContact.Clone();
+            newContact.Address.Zip += "different";
+            
+            var response = _repository.Update(newContact);
+
+            Assert.That(response.Id, Is.EqualTo(newContact.Id));
+            ContactTestHelpers.AssertContactMatchesAllButId(response, newContact);
+        }
+        
+        [Test]
+        public void Update_WhenCalledWithNonExistentContact_Idk()
+        {
+            var createdContact = _repository.Create(ContactTestHelpers.GenerateContact());
+            var newContact = createdContact.Clone();
+            newContact.Address.Zip += "different";
+            newContact.Id += 1;
+            var response = _repository.Update(newContact);
+
+            Assert.That(response, Is.Null);
+        }
+        #endregion
+
+        #region GetCallList
+
+        [Test]
+        public void GetCallList_WhenCalled_ReturnsProperObjects()
+        {
+            var userToCreateOne = ContactTestHelpers.GenerateContact();
+            var userToCreateTwo = ContactTestHelpers.GenerateContact();
+            var userToCreateThree = ContactTestHelpers.GenerateContact();
+
+            _repository.Create(userToCreateOne);
+            _repository.Create(userToCreateTwo);
+            _repository.Create(userToCreateThree);
+
+            var callList = _repository.GetCallList();
+
+            Assert.That(callList.Count(), Is.EqualTo(3));
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.FirstOrDefault(cl => cl.Name.First == userToCreateOne.Name.First), userToCreateOne);
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.FirstOrDefault(cl => cl.Name.First == userToCreateTwo.Name.First), userToCreateTwo);
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.FirstOrDefault(cl => cl.Name.First == userToCreateThree.Name.First), userToCreateThree);
+        }
+
+        [Test]
+        public void GetCallList_WhenCalled_FiltersOutItemsWithoutHomePhone()
+        {
+            var userToCreateOne = ContactTestHelpers.GenerateContact();
+            var userToCreateTwo = ContactTestHelpers.GenerateContact();
+            var userToCreateThree = ContactTestHelpers.GenerateContact();
+            userToCreateThree.Phone = userToCreateThree.Phone.Where(p => p.Type != PhoneType.Home).ToList();
+
+            _repository.Create(userToCreateOne);
+            _repository.Create(userToCreateTwo);
+            _repository.Create(userToCreateThree);
+
+            var callList = _repository.GetCallList();
+
+            Assert.That(callList.Count(), Is.EqualTo(2));
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.FirstOrDefault(cl => cl.Name.First == userToCreateOne.Name.First), userToCreateOne);
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.FirstOrDefault(cl => cl.Name.First == userToCreateTwo.Name.First), userToCreateTwo);
+        }
+
+        [Test]
+        public void GetCallList_WhenCalled_OrdersByLastName()
+        {
+            var shouldBeFirst = ContactTestHelpers.GenerateContact();
+            shouldBeFirst.Name.Last = "A";
+            var shouldBeSecond = ContactTestHelpers.GenerateContact();
+            shouldBeSecond.Name.Last = "B";
+            var shouldBeThird = ContactTestHelpers.GenerateContact();
+            shouldBeThird.Name.Last = "C";
+
+
+            _repository.Create(shouldBeThird);
+            _repository.Create(shouldBeFirst);
+            _repository.Create(shouldBeSecond);
+
+            var callList = _repository.GetCallList();
+
+            Assert.That(callList.Count(), Is.EqualTo(3));
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.ToArray()[0], shouldBeFirst);
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.ToArray()[1], shouldBeSecond);
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.ToArray()[2], shouldBeThird);
+        }
+
+        [Test]
+        public void GetCallList_WhenCalled_OrdersByLastNameThenFirstName()
+        {
+            var shouldBeFirst = ContactTestHelpers.GenerateContact();
+            shouldBeFirst.Name.Last = "A";
+            shouldBeFirst.Name.First = "Z";
+            var shouldBeSecond = ContactTestHelpers.GenerateContact();
+            shouldBeSecond.Name.Last = "C";
+            shouldBeSecond.Name.First= "A";
+            var shouldBeThird = ContactTestHelpers.GenerateContact();
+            shouldBeThird.Name.Last = "C";
+            shouldBeThird.Name.First = "B";
+
+
+            _repository.Create(shouldBeThird);
+            _repository.Create(shouldBeFirst);
+            _repository.Create(shouldBeSecond);
+
+            var callList = _repository.GetCallList();
+
+            Assert.That(callList.Count(), Is.EqualTo(3));
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.ToArray()[0], shouldBeFirst);
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.ToArray()[1], shouldBeSecond);
+            ContactTestHelpers.AssertCallRecordMatchesContact(
+                callList.ToArray()[2], shouldBeThird);
+        }
+        
+        [Test]
+        public void GetCallList_WhenCalledContactHasNoMiddleName_ReturnsWithEmptyString()
+        {
+            var shouldBeFirst = ContactTestHelpers.GenerateContact();
+            shouldBeFirst.Name.Middle = "";
+            _repository.Create(shouldBeFirst);
+
+            var callList = _repository.GetCallList();
+
+            Assert.That(callList.First().Name.Middle, Is.EqualTo(""));
+        }
+
+        #endregion
     }
 }

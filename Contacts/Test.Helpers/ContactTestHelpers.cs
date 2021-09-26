@@ -105,5 +105,13 @@ namespace Test.Helpers
                 AssertContactMatchesAllButId(actualContact, expectedContact);
             }
         }
+
+        public static void AssertCallRecordMatchesContact(CallRecord actual, Contact expected)
+        {
+            Assert.That(actual.Name.First, Is.EqualTo(expected.Name.First));
+            Assert.That(actual.Name.Middle, Is.EqualTo(expected.Name.Middle));
+            Assert.That(actual.Name.Last, Is.EqualTo(expected.Name.Last));
+            Assert.That(actual.Phone, Is.EqualTo(expected.Phone.First(p => p.Type == PhoneType.Home).Number));
+        }
     }
 }

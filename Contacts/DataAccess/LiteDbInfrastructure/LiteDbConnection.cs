@@ -14,7 +14,8 @@ namespace DataAccess.LiteDbInfrastructure
             {
                 throw new ArgumentNullException(nameof(desiredDirectory));
             }
-            _db = new LiteDatabase($"{desiredDirectory}\\LiteDb.db");
+
+            _db = new LiteDatabase($"{desiredDirectory}\\LiteDb.db", new BsonMapper(){EmptyStringToNull = false});
         }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using API.Controllers;
 using API.DTOs;
 using API.Helpers.Interfaces;
@@ -32,8 +30,10 @@ namespace API.Tests.Unit.Controllers
         private Contact _simpleReturnedContact;
         private IEnumerable<Contact> _simpleContactList;
         private List<ExistingContactDTO> _simpleExistingContactDTOList;
+        private List<CallRecordDTO> _simpleCallRecordDTOList;
         private ServiceLayerResponseWrapper<Contact> _simpleServiceLayerContactResponse;
         private ServiceLayerResponseWrapper<IEnumerable<Contact>> _simpleServiceLayerIEnumerableContactResponse;
+        private ServiceLayerResponseWrapper<IEnumerable<CallRecord>> _simpleServiceLayerIEnumerableCallRecordResponse;
         private ServiceLayerResponse _simpleServiceLayerResponse;
         private string _traceId = "0404-0404-04040404-040404-0404";
 
@@ -46,9 +46,12 @@ namespace API.Tests.Unit.Controllers
             _simpleReturnedContact = new Contact();
             _simpleContactList = new List<Contact>();
             _simpleExistingContactDTOList = new List<ExistingContactDTO>();
+            _simpleCallRecordDTOList = new List<CallRecordDTO>();
             _simpleServiceLayerContactResponse = new ServiceLayerResponseWrapper<Contact>();
             _simpleServiceLayerIEnumerableContactResponse = new ServiceLayerResponseWrapper<IEnumerable<Contact>>();
             _simpleServiceLayerResponse = new ServiceLayerResponse();
+            _simpleServiceLayerIEnumerableCallRecordResponse =
+                new ServiceLayerResponseWrapper<IEnumerable<CallRecord>>();
 
             _contactServiceMock = new Mock<IContactService>(MockBehavior.Strict);
             _contactServiceMock.Setup(csm => csm.Create(It.IsAny<Contact>()))
@@ -57,6 +60,8 @@ namespace API.Tests.Unit.Controllers
                 .Returns(_simpleServiceLayerIEnumerableContactResponse);
             _contactServiceMock.Setup(csm => csm.GetOne(It.IsAny<int>())).Returns(_simpleServiceLayerContactResponse);
             _contactServiceMock.Setup(csm => csm.Delete(It.IsAny<int>())).Returns(_simpleServiceLayerResponse);
+            _contactServiceMock.Setup(csm => csm.Update(It.IsAny<Contact>())).Returns(_simpleServiceLayerContactResponse);
+            _contactServiceMock.Setup(csm => csm.GetCallList()).Returns(_simpleServiceLayerIEnumerableCallRecordResponse);
 
             _mapperMock = new Mock<IMapper>(MockBehavior.Strict);
             _mapperMock.Setup(mm => mm.Map<Contact>(It.IsAny<ContactDTO>())).Returns(_simpleMappedContact);
@@ -67,6 +72,8 @@ namespace API.Tests.Unit.Controllers
                 .Returns(_simpleExistingContactDTOList);
             _mapperMock.Setup(mm => mm.Map<IEnumerable<ExistingContactDTO>>(It.Is<IEnumerable<Contact>>(r => r == null)))
                 .Returns((IEnumerable<ExistingContactDTO>)null);
+            _mapperMock.Setup(mm => mm.Map<IEnumerable<CallRecordDTO>>(It.IsAny<IEnumerable<CallRecord>>()))
+                .Returns(_simpleCallRecordDTOList);
 
             _loggerMock = new Mock<ILogger<ContactsController>>();
 
@@ -431,17 +438,218 @@ namespace API.Tests.Unit.Controllers
 
         #region Update
         [Test]
-        public void Update_WhenServiceThrowsException_LogsException()
+        public void Update_ContainsPutAttribute()
         {
             Assert.IsTrue(Attribute.IsDefined(typeof(ContactsController).GetMethod("Update"), typeof(HttpPutAttribute)));
         }
-        
+
         [Test]
         public void Update_WhenCalled_MapsGivenContractDto()
         {
             _controller.Update(1, _simpleContactDto);
 
             _mapperMock.Verify(mm => mm.Map<Contact>(_simpleContactDto));
+        }
+        
+        [Test]
+        public void Update_MapperReturns_CallsServiceLayerWithMappedContact()
+        {
+            _controller.Update(1, _simpleContactDto);
+
+            _contactServiceMock.Verify( csm => csm.Update(_simpleMappedContact));
+        }
+
+        [Test]
+        public void Update_MapperReturns_CallsServiceLayerWithIdProvided()
+        {
+            _controller.Update(9999, _simpleContactDto);
+
+            _contactServiceMock.Verify( csm => csm.Update(It.Is<Contact>(c => c.Id == 9999)));
+        }
+
+        [Test]
+        public void Update_WhenServiceLayerReturnsData_CallsMapperOnThatData()
+        {
+            _simpleServiceLayerContactResponse.SetData(_simpleReturnedContact);
+            
+            _controller.Update(1, _simpleContactDto);
+
+            _mapperMock.Verify(mm => mm.Map<ExistingContactDTO>(_simpleReturnedContact));
+        }
+
+        [Test]
+        public void Update_WhenMapperMapsReturnedContact_ReturnsThatData()
+        {
+            _simpleServiceLayerContactResponse.SetData(_simpleReturnedContact);
+            
+            var response = _controller.Update(1, _simpleContactDto) as JsonResult;
+
+            Assert.That(response.Value, Is.EqualTo(_simpleExistingContactDto));
+        }
+
+        [Test]
+        public void Update_WhenMapperMapsReturnedContact_Returns200()
+        {
+            _simpleServiceLayerContactResponse.SetData(_simpleReturnedContact);
+            
+            var response = _controller.Update(1, _simpleContactDto) as JsonResult;
+
+            Assert.That(response.StatusCode, Is.EqualTo(200));
+        }
+
+        [Test]
+        public void Update_WhenServiceReturnsNotFound_ReturnsNotFoundResponse()
+        {
+            _simpleServiceLayerContactResponse.AddInformation<NotFound>("No Contact found with that Id");
+            
+            var response = _controller.Update(1, _simpleContactDto) as NotFoundResult;
+
+            Assert.That(response.StatusCode, Is.EqualTo(404));
+        }
+
+        [Test]
+        public void Update_WhenServiceReturnsValidationErrorAndNotFound_ReturnsNotFoundResponse()
+        {
+            _simpleServiceLayerContactResponse.AddInformation<NotFound>("No Contact found with that Id")
+                .AddInformation<ValidationError>("Test: Validation");
+
+            var response = _controller.Update(1, _simpleContactDto) as NotFoundResult;
+
+            Assert.That(response.StatusCode, Is.EqualTo(404));
+        }
+
+        [Test]
+        public void Update_WhenServiceReturnsValidationError_ReturnsBadRequest()
+        {
+            var validationErrorOne = Guid.NewGuid().ToString();
+            var validationErrorTwo = Guid.NewGuid().ToString();
+            _simpleServiceLayerContactResponse.AddInformation<ValidationError>(validationErrorOne)
+                .AddInformation<ValidationError>(validationErrorTwo);
+
+            var response = _controller.Update(1, _simpleContactDto) as JsonResult;
+
+            Assert.That(((ValidationErrorResponse) response.Value).ValidationErrors,
+                Has.Length.EqualTo(2)
+                    .And.Contains(validationErrorOne)
+                    .And.Contains(validationErrorTwo));
+        }
+
+        [Test]
+        public void Update_WhenServiceReturnsValidationError_ReturnsBadRequestStatusCode()
+        {
+            var validationErrorOne = Guid.NewGuid().ToString();
+            var validationErrorTwo = Guid.NewGuid().ToString();
+            _simpleServiceLayerContactResponse.AddInformation<ValidationError>(validationErrorOne)
+                .AddInformation<ValidationError>(validationErrorTwo);
+
+            var response = _controller.Update(1, _simpleContactDto) as JsonResult;
+
+            Assert.That(response.StatusCode, Is.EqualTo(400));
+        }
+
+
+        [Test]
+        public void Update_WhenServiceLayerThrows_Returns500Message()
+        {
+            _contactServiceMock.Setup(csm => csm.Update(It.IsAny<Contact>())).Throws(new Exception());
+
+            var result = _controller.Update(1, _simpleContactDto) as JsonResult;
+
+            Assert.That(result.Value, Is.EqualTo(TestHelpers.GetDefault500Message(_traceId)));
+        }
+        [Test]
+        public void Update_WhenServiceLayerThrows_Returns500StatusCode()
+        {
+            _contactServiceMock.Setup(csm => csm.Update(It.IsAny<Contact>())).Throws(new Exception());
+
+            var result = _controller.Update(1, _simpleContactDto) as JsonResult;
+
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+        }
+
+        [Test]
+        public void Update_WhenServiceThrowsException_LogsException()
+        {
+            var exception = new Exception("Houston we have a problem");
+            _contactServiceMock.Setup(csm => csm.Update(It.IsAny<Contact>())).Throws(exception);
+
+            _controller.Update(1, _simpleContactDto);
+
+            _loggerMock.VerifyCriticalWasCalled(exception.Message);
+        }
+        #endregion
+
+        #region GetCallList
+
+        [Test]
+        public void GetCallList_HasGetAttribute()
+        {
+            Assert.IsTrue(Attribute.IsDefined(typeof(ContactsController).GetMethod("GetCallList"), typeof(HttpGetAttribute)));
+        }
+
+        [Test]
+        public void GetCallList_WhenCalled_CallsServiceLayerFunction()
+        {
+            _controller.GetCallList();
+            
+            _contactServiceMock.Verify(csm => csm.GetCallList());
+        }
+
+        [Test]
+        public void GetCallList_WhenServiceResponds_MapsResponse()
+        {
+            var callRecords = new List<CallRecord>();
+            _simpleServiceLayerIEnumerableCallRecordResponse.SetData(callRecords);
+            
+            _controller.GetCallList();
+
+            _mapperMock.Verify(mm => mm.Map<IEnumerable<CallRecordDTO>>(callRecords));
+        }
+
+        [Test]
+        public void GetCallList_WhenMapperReturns_ReturnsData()
+        {
+            var response = _controller.GetCallList() as JsonResult;
+
+            Assert.That(response.Value, Is.EqualTo(_simpleCallRecordDTOList));
+        }
+
+        [Test]
+        public void GetCallList_WhenMapperReturns_Returns200()
+        {
+            var response = _controller.GetCallList() as JsonResult;
+
+            Assert.That(response.StatusCode, Is.EqualTo(200));
+        }
+
+        [Test]
+        public void GetCallList_WhenServiceLayerThrows_Returns500Message()
+        {
+            _contactServiceMock.Setup(csm => csm.GetCallList()).Throws(new Exception());
+
+            var result = _controller.GetCallList() as JsonResult;
+
+            Assert.That(result.Value, Is.EqualTo(TestHelpers.GetDefault500Message(_traceId)));
+        }
+        [Test]
+        public void GetCallList_WhenServiceLayerThrows_Returns500StatusCode()
+        {
+            _contactServiceMock.Setup(csm => csm.GetCallList()).Throws(new Exception());
+
+            var result = _controller.GetCallList() as JsonResult;
+
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+        }
+
+        [Test]
+        public void GetCallList_WhenServiceThrowsException_LogsException()
+        {
+            var exception = new Exception("Houston we have a problem");
+            _contactServiceMock.Setup(csm => csm.GetCallList()).Throws(exception);
+
+            _controller.GetCallList();
+
+            _loggerMock.VerifyCriticalWasCalled(exception.Message);
         }
         #endregion
     }

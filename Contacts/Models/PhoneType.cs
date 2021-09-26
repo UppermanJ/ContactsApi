@@ -6,7 +6,7 @@ namespace Models
 {
     public enum PhoneType
     {
-        Home,
+        Home = 1, // to prevent defaulting
         Work,
         Mobile
     }

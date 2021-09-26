@@ -15,5 +15,10 @@
             Messages.Add(new I() { Message = message });
             return this;
         }
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}, {nameof(Data)}: {Data}";
+        }
     }
 }

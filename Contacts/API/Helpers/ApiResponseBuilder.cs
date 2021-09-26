@@ -21,6 +21,7 @@ namespace API.Helpers
         public static ApiResponseBuilder ForDelete => new ApiResponseBuilder(StatusCodes.Status204NoContent);
         public static ApiResponseBuilder ForCreate => new ApiResponseBuilder(StatusCodes.Status201Created);
         public static ApiResponseBuilder ForRead => new ApiResponseBuilder(StatusCodes.Status200OK);
+        public static ApiResponseBuilder ForUpdate => new ApiResponseBuilder(StatusCodes.Status200OK);
         public ApiResponseBuilder SetInformation(IList<Information> information)
         {
             _information = information;

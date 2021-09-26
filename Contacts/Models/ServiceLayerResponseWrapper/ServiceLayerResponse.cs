@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Models.ServiceLayerResponseWrapper
@@ -15,6 +16,11 @@ namespace Models.ServiceLayerResponseWrapper
         {
             Messages.Add(new I() { Message = message });
             return this;
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(Messages)}: {String.Join(",", Messages.Select(m => m.ToString()))}, {nameof(HasErrors)}: {HasErrors}";
         }
     }
 }

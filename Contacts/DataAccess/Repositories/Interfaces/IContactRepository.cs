@@ -8,6 +8,8 @@ namespace DataAccess.Repositories.Interfaces
         Contact Create(Contact contact);
         Contact GetOne(int id);
         IEnumerable<Contact> GetAll();
-        public void Delete(int id);
+        void Delete(int id);
+        Contact Update(Contact contact);
+        IEnumerable<CallRecord> GetCallList();
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Models
+﻿namespace Models
 {
     public class Phone
     {
@@ -12,6 +8,20 @@ namespace Models
         public override string ToString()
         {
             return $"{nameof(Number)}: {Number}, {nameof(Type)}: {Type}";
+        }
+
+        public bool IsEqual(Phone phone)
+        {
+            return Number == phone.Number && Type == phone.Type;
+        }
+
+        public Phone Clone()
+        {
+            return new Phone()
+            {
+                Number = Number,
+                Type = Type
+            };
         }
     }
 }

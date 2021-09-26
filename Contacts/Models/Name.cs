@@ -14,5 +14,22 @@ namespace Models
         {
             return $"{nameof(First)}: {First}, {nameof(Middle)}: {Middle}, {nameof(Last)}: {Last}";
         }
+
+        public bool IsEqual(Name name)
+        {
+            return First == name.First
+                && Middle == name.Middle
+                && Last == name.Last;
+        }
+
+        public Name Clone()
+        {
+            return new Name()
+            {
+                First = First,
+                Middle = Middle,
+                Last = Last
+            };
+        }
     }
 }

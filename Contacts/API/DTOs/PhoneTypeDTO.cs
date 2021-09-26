@@ -6,7 +6,7 @@ namespace API.DTOs
 {
     public enum PhoneTypeDTO
     {
-        Home,
+        Home = 1,// to prevent defaulting,
         Work,
         Mobile
     }
