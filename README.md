@@ -33,6 +33,8 @@ Then, simply run the generated `API.exe` in the `build` folder.  The API will th
 
 I try to maintain unidirectional flow.  For context, here's the VS generated dependency graph: 
 ![Architecture view for Contacts With Tests](https://user-images.githubusercontent.com/56522001/134828137-3c470bdc-57ce-4a48-bd11-597e1cb55ddf.png)
+<br/>
 And here it is without the tests (Which are excluded from production builds)
+<br/>
 ![Architecture view for Contacts_4](https://user-images.githubusercontent.com/56522001/134828238-ab2dd195-d7b1-4403-8c71-d8141f8df536.png)
 
