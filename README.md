@@ -7,8 +7,8 @@
   * [Uniqueness](#Uniqueness)
 * [Architectural decisions](#Architectural-decisions)
   * [What's up with this "ServiceLayerResponse" thing?](#Whats-up-with-this-servicelayerresponse-thing)
-  * [My approach to layers](My-approach-to-layers)
-  * [RequestAccessor](RequestAccessor)
+  * [My approach to layers](#My-approach-to-layers)
+  * [RequestAccessor](#RequestAccessor)
 
 # Pre Build Requirements
 As it is, this application expects a folder destination for Logs and Databases (Production, Development and Automated Tests).
