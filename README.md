@@ -1,7 +1,14 @@
 # Jump to Links
 * [Pre Build Requirements](#Pre-Build-Requirements)
-
-
+  * [Required for build](Required-for-build)
+* [Building](#Building)
+* [Questions I would have asked and assumptions I made](#Questions-I-would-have-asked-and-assumptions-I-made)
+  * [Required fields](#Required-fields)
+  * [Uniqueness](#Uniqueness)
+* [Architectural decisions](#Architectural-decisions)
+  * [What's up with this "ServiceLayerResponse" thing?](#What'-up-with-this-"ServiceLayerResponse"-thing?)
+  * [My approach to layers](My-approach-to-layers)
+  * [RequestAccessor](RequestAccessor)
 
 # Pre Build Requirements
 As it is, this application expects a folder destination for Logs and Databases (Production, Development and Automated Tests).
