@@ -6,7 +6,7 @@
   * [Required fields](#Required-fields)
   * [Uniqueness](#Uniqueness)
 * [Architectural decisions](#Architectural-decisions)
-  * [What's up with this "ServiceLayerResponse" thing?](#What'-up-with-this-"ServiceLayerResponse"-thing?)
+  * [What's up with this "ServiceLayerResponse" thing?](#Whats-up-with-this-servicelayerresponse-thing)
   * [My approach to layers](My-approach-to-layers)
   * [RequestAccessor](RequestAccessor)
 
