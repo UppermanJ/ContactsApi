@@ -29,7 +29,7 @@ Alternatively you can create your own folders, just know that you will need to u
 * appsettings.Json line 8
 * nlog.config line 6
 
-> **Note that the integration tests will require you to have an environment variable with the desired directory for the integration database location.  That environment variable is named `Coding_Challenge_Upperman` nad is referenced in the file LiteDbTestBase on line 15.**
+> **Note that the integration tests will require you to have an environment variable with the desired directory for the integration database location.  That environment variable is named `Coding_Challenge_Upperman` and is referenced in the file LiteDbTestBase on line 15.**
 
 ## Required for build
 
@@ -83,7 +83,7 @@ Each layer has it's own responsibilities:
 
 * Client layer:
   * Authenticate User
-  * Recieve Data from the User
+  * Receive Data from the User
   * Format that Data for the Services
   * Retrieve Data from Services
   * Return Data to User in a way appropriate for it's context
