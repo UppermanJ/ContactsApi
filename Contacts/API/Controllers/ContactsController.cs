@@ -30,6 +30,7 @@ namespace API.Controllers
         }
 
         [HttpGet]
+        [ProducesDefaultResponseType(typeof(IEnumerable<ExistingContactDTO>))]
         public IActionResult GetAll()
         {
             try
@@ -50,6 +51,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
+        [ProducesDefaultResponseType(typeof(ExistingContactDTO))]
         public IActionResult Create([FromBody] ContactDTO contact)
         {
             try
@@ -71,6 +73,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{id}")]
+        [ProducesDefaultResponseType(typeof(ExistingContactDTO))]
         public IActionResult GetOne([FromRoute] int id)
         {
             try
@@ -107,6 +110,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{id}")]
+        [ProducesDefaultResponseType(typeof(ExistingContactDTO))]
         public IActionResult Update([FromRoute] int id, [FromBody] ContactDTO contact)
         {
             try
@@ -130,6 +134,7 @@ namespace API.Controllers
         }
 
         [HttpGet("call-list")]
+        [ProducesDefaultResponseType(typeof(IEnumerable<CallRecordDTO>))]
         public IActionResult GetCallList()
         {
             try

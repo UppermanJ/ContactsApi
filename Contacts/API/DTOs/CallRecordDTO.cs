@@ -1,5 +1,10 @@
-﻿namespace API.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
+using Swashbuckle.AspNetCore.Annotations;
+
+namespace API.DTOs
 {
+    [SwaggerSchema(Title = "Call Record", Required = new []{"name", "phone"})]
     public class CallRecordDTO
     {
         public NameDTO Name { get; set; }

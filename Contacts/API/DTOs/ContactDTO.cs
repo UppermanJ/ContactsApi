@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.DTOs
 {
+    [SwaggerSchema(Title = "Contact", Required = new []{"name"})]
     public class ContactDTO
     {
         public NameDTO Name { get; set; }

@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.DTOs
 {
+    [SwaggerSchema(Title = "Address")]
     public class AddressDTO
     {
         public string Street { get; set; }
